@@ -1,0 +1,19 @@
+{
+  "block_list_path": "word_list_block.txt",
+  "replace_list_path": "word_list_replace.txt",
+  "sign_port": "COM12",
+  "sign_scroll_wait": false,
+  "stack_size": 5,
+  "tweet_path": "tweet_persist/tweet_{}.json",
+  "twitter_address": [
+    "artifactorytest"
+  ],
+  "twitter_api": {
+    "asecret": "MAz1RkgokrBkCnShjSnnfFnkjVHxGi7Cp0clw5DyVv7a9",
+    "atoken": "110105627-TwpbQ2Y4tR1eyPXVrXrplajwmN1ShD1kty9MUmjf",
+    "ckey": "QxRb0SphPhWi1GSz4YiFszvCj",
+    "csecret": "bOsO0QizkFZWa7tUwwR006RnxRWLyr98ixIo2TnstyhKHzOgXm"
+  },
+  "update_time_force_sec": 300.0,
+  "update_time_min_sec": 30.0
+}
