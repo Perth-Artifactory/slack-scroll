@@ -52,7 +52,6 @@ def load_word_list(path):
 def main(args):
     print("Artifactory Twittinator - Twitter Parser")
 
-
     if len(args) != 1:
         print("Requires exactly one argument as path to config")
         sys.exit(1)
