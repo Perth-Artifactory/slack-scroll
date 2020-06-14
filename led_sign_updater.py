@@ -184,7 +184,7 @@ class TweetStack(object):
         sign.add_special(ledsign2.COLOUR_BRIGHT_ORANGE)
         sign.add_text(" Tweet to: ")
 
-        text = "@{}".format(self.twitter_address)
+        text = "@{}".format(self.twitter_address[0])
         if self.sign_scroll_wait:
             for bit in self.split_text(text):
                 sign.end_frame()
