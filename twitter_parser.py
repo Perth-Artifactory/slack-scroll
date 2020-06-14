@@ -11,6 +11,8 @@ from tweepy import Stream
 from tweepy import OAuthHandler
 from tweepy.streaming import StreamListener
 from tweet import Tweet
+import requests
+import time
 
 
 class Listener(StreamListener):
@@ -50,6 +52,7 @@ def load_word_list(path):
 def main(args):
     print("Artifactory Twittinator - Twitter Parser")
 
+
     if len(args) != 1:
         print("Requires exactly one argument as path to config")
         sys.exit(1)
@@ -76,9 +79,15 @@ def main(args):
     print("Creating listener")
     listener = Listener(block_list=block_list, replacement_list=replace_list, tweet_path=tweet_path)
 
-    print("Streaming tweets")
+    print("Setting up stream tweets")
     twitter_stream = Stream(auth, listener)
-    twitter_stream.filter(track=twitter_address)
+
+    while True:
+        try:
+            twitter_stream.filter(track=twitter_address)
+        except requests.exceptions.ConnectionError as e:
+            print("ERROR: {}".format(e))
+            time.sleep(5.0)
 
 
 if __name__ == "__main__":

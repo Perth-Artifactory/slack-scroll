@@ -42,12 +42,13 @@ transitions_to_tweet = [
 class TweetStack(object):
     screen_width = 13
 
-    def __init__(self, size, persistence_path, sign_port, twitter_address, sign_scroll_wait):
+    def __init__(self, size, persistence_path, sign_port, twitter_address, sign_scroll_wait, message):
         self.size = size
         self.persistence_path = persistence_path
         self.sign_port = sign_port
         self.twitter_address = twitter_address
         self.sign_scroll_wait = sign_scroll_wait
+        self.message = message
 
         self.tweets = []
         self.has_new = False
@@ -160,6 +161,13 @@ class TweetStack(object):
         sign.add_special(ledsign2.FONT_5x5)
         sign.add_special(ledsign2.COLOUR_RAINBOW1)
         sign.add_text("Twittinator")
+        if self.message is not None:
+            sign.end_frame()
+            sign.add_run_mode(ledsign2.EFFECT_SCROLL_UP)
+            sign.add_text(" ")
+            sign.end_frame()
+            sign.add_special(ledsign2.FONT_5x7)
+            sign.add_text(self.message)
 
     def draw_tweet_headline(self, sign):
         sign.end_frame()
@@ -264,6 +272,7 @@ class LEDSignUpdater(object):
         self.sign_scroll_wait = j_config["sign_scroll_wait"]
         self.update_time_min_sec = j_config["update_time_min_sec"]
         self.update_time_force_sec = j_config["update_time_force_sec"]
+        self.message = j_config["message"]
 
         print("Loading latest {} cached tweets".format(self.stack_size))
         self.tweet_stack = TweetStack(
@@ -272,6 +281,7 @@ class LEDSignUpdater(object):
             sign_port=self.sign_port,
             twitter_address=self.twitter_address,
             sign_scroll_wait=self.sign_scroll_wait,
+            message=self.message,
         )
         print("{} tweets loaded".format(len(self.tweet_stack.tweets)))
 
