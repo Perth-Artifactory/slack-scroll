@@ -1,20 +1,20 @@
-import sys
 import time
 
+from led_sign_updater_esp32 import LEDSignUpdater
 
-def main(args):
-    print("Artifactory Twittinator - LED Sign Updater")
+CONFIG = "config.json"
 
-    if len(args) != 1:
-        print("Requires exactly one argument as path to config")
-        sys.exit(1)
 
-    updater = LEDSignUpdater(config_path=args[0])
+def main():
+    print("Artifactory Twittinator - LED Sign Updater on ESP32 MicroPython")
+
+    updater = LEDSignUpdater(config_path=CONFIG)
 
     # Main processing loop
     while True:
         updater.run()
-        time.sleep(1.0)
+        time.sleep(0.1)
+
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
