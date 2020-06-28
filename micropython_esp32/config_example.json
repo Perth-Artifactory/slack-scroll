@@ -1,0 +1,18 @@
+{
+   "block_list_path" : "word_list_block.txt",
+   "replace_list_path" : "word_list_replace.txt",
+   "sign_port" : "COM8",
+   "sign_scroll_wait" : false,
+   "stack_size" : 5,
+   "tweet_path" : "tweet_persist/tweet_{}.json",
+   "twitter_address" : [ "PerthArtifact", "perthartifactory", "artifactorytest" ],
+   "twitter_api" : {
+      "asecret" : "<api_secret>",
+      "atoken" : "<api_token>",
+      "ckey" : "<client_key>",
+      "csecret" : "<client_secret>"
+   },
+   "update_time_force_sec" : 300.0,
+   "update_time_min_sec" : 30.0,
+   "message" : "Giant Robot wants you to make stuff!"
+}

@@ -1,0 +1,18 @@
+{
+   "block_list_path" : "word_list_block.txt",
+   "replace_list_path" : "word_list_replace.txt",
+   "sign_port" : "COM13",
+   "sign_scroll_wait" : false,
+   "stack_size" : 5,
+   "tweet_path" : "tweet_persist/tweet_{}.json",
+   "twitter_address" : [ "PerthArtifact", "perthartifactory", "artifactorytest" ],
+   "twitter_api" : {
+      "asecret" : "KGRUzSer0zpZvjKJTmDiU1WdYoedLxuV4rf2a3DhL4Ddb",
+      "atoken" : "110105627-795Wb2YHFhMuJgS5tqE1TcxI2giE734lueORNlam",
+      "ckey" : "2LQntyabMvk1ICZjAZGFLepYL",
+      "csecret" : "8eLKu3ZoW5E74kFvTZV6JDnXPI4QkxByPpbsIyZhKDFBkj1Qqr"
+   },
+   "update_time_force_sec" : 300.0,
+   "update_time_min_sec" : 30.0,
+   "message" : "Giant Robot wants you to make stuff!"
+}
