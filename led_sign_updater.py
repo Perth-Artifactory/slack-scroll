@@ -88,7 +88,7 @@ class TweetStack(object):
                 tweet = Tweet.from_file(path)
             except ValueError as e:
                 print("Cannot decode tweet file '{}': {}".format(path, e))
-            finally:
+            else:
                 self.tweets.append([path, tweet])
 
                 # Flag that at least one tweet is new
