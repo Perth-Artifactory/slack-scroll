@@ -1,7 +1,7 @@
 import random
 import ledsign2 as sign_lib
 
-PORT = "COM8"
+PORT = "COM13"
 
 print("LED Sign Test")
 

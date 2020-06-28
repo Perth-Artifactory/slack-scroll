@@ -4,13 +4,7 @@ from ledsign_micro import *
 def run_example():
     print("Starting micropython example")
 
-    # Open a connection to the sign.  you'll need to change the device node
-    # here if you're not using a USB-Serial converter.  If you have an
-    # actual serial port, use /dev/ttyS0 instead for COM1.  If you're on Windows,
-    # use "COM1" or whatever the port's name is.  You can also set it to a
-    # numeric value starting at 0 (ie: open the first serial port).
-    #
-    sign = LEDSign('COM8')
+    sign = LEDSign(tx_pin=32)
 
     # Begin talking to the sign.  By default, it will be sent to all signs, and
     # not do a factory reset on the sign.

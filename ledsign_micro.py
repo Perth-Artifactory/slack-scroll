@@ -23,7 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Tazard 2020-06-14: Modified for micropython running on ESP32.
 """
-from struct import pack
+# from struct import pack
+from machine import UART
 
 # Both open and close effects
 # cycle through all effects
@@ -176,19 +177,24 @@ SOUND_BEEP_1 = b'\xE2'
 
 class LEDSign:
     """Implementation of the XC0193 LED Matrix Sign protocol"""
+    SIGN_UART = 2
+    BAUD_RATE = 2400
+    # UART_SIGNAL_TXD_INV = (0x1 << 5)
 
-    def __init__(self, port):
+    def __init__(self, tx_pin):
         # self.s = serial.Serial(port, 2400)
-        self.s = None
+        self.tx_pin = tx_pin
+        self.s = UART(self.SIGN_UART)
+        self.s.init(baudrate=self.BAUD_RATE, tx=self.tx_pin, invert=UART.INV_TX)
         self.file_id = None
         self.message_open = False
-        # print("Opening Port %s" % self.s.portstr)
+        print("Opening UART {} with TX on pin {}".format(self.SIGN_UART, self.tx_pin))
 
     def send_to_sign(self, msg):
         byte_string = " ".join("{:02x}".format(c) for c in msg)
         print('Send: {} = "{}"'.format(msg, byte_string))
         # print(bytes(msg)[0])
-        # self.s.write(msg)
+        self.s.write(msg)
 
     def begin_message(self, sign=list(range(0, 128)), reset=False):
         """Begins a message for a sign.  defaults to all signs."""
