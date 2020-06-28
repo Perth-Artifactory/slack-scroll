@@ -257,7 +257,7 @@ class LEDSign:
         if mode < 0 or mode > 24:
             raise Exception("run mode must be 0-24")
 
-        self.send_to_sign(bytes(mode))
+        self.send_to_sign(bytes(chr(mode), 'utf8'))
 
     def add_text(self, msg):
         """Add text given as unicode string (sign can only render ascii characters)"""

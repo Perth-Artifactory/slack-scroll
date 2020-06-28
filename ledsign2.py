@@ -21,8 +21,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import serial, string
-from datetime import datetime, time
+import serial
+from datetime import datetime
 from struct import pack
 
 # Both open and close effects
@@ -250,7 +250,7 @@ class LEDSign:
         if mode < 0 or mode > 24:
             raise Exception("run mode must be 0-24")
 
-        self.send_to_sign(bytes(mode))
+        self.send_to_sign(bytes(chr(mode), 'utf8'))
 
     def add_text(self, msg):
         """Add text given as unicode string (sign can only render ascii characters)"""
