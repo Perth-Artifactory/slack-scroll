@@ -10,8 +10,7 @@ from datetime import datetime
 import sys
 
 import ledsign_micro as ledsign2
-from micropython_esp32.main import main
-from tweet_stack import TweetStack
+from messages import TweetStack
 
 transitions_to_title = [
     ledsign2.EFFECT_SPLIT_OPEN,

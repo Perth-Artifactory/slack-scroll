@@ -1,6 +1,6 @@
 import time
 
-from led_sign_updater_esp32 import LEDSignUpdater
+from twittinator import LEDSignUpdater
 
 CONFIG = "config.json"
 
