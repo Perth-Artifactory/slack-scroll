@@ -3,7 +3,43 @@ import time
 import json
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
-import serial  # pip install pyserial
+import ledsign2
+import random
+
+transitions_to_title = [
+    ledsign2.EFFECT_SPLIT_OPEN,
+    ledsign2.EFFECT_WIPE_DOWN,
+    ledsign2.EFFECT_FALLING_LINES,
+]
+
+transitions_between_messages = [
+    ledsign2.EFFECT_SPLIT_OPEN,
+    ledsign2.EFFECT_SPLIT_CLOSE,
+    ledsign2.EFFECT_WIPE_OUT,
+    ledsign2.EFFECT_WIPE_RIGHT,
+    ledsign2.EFFECT_WIPE_IN,
+    ledsign2.EFFECT_SPLIT_INTERLACED,
+    ledsign2.EFFECT_WIPE_INTERLACED,
+    ledsign2.EFFECT_WIPE_UP,
+    ledsign2.EFFECT_EXPLODE,
+    ledsign2.EFFECT_PACMAN,
+    ledsign2.EFFECT_PACMAN,
+    ledsign2.EFFECT_PACMAN,
+    ledsign2.EFFECT_SHOOT,
+    ledsign2.EFFECT_DISSOLVE,
+    ledsign2.EFFECT_SLIDE_LETTERS,
+]
+
+message_colours = [
+    ledsign2.COLOUR_BRIGHT_RED,
+    ledsign2.COLOUR_DIM_RED,
+    ledsign2.COLOUR_AMBER,
+    ledsign2.COLOUR_YELLOW,
+    ledsign2.COLOUR_DIM_ORANGE,
+    ledsign2.COLOUR_BRIGHT_ORANGE,
+    ledsign2.COLOUR_DIM_GREEN,
+    ledsign2.COLOUR_BRIGHT_GREEN,
+]
 
 with open('config.json') as f:
     config = json.load(f)
@@ -25,7 +61,7 @@ def fetch_existing_messages():
     )
     if response["ok"]:
         messages = {message["ts"]: message["text"] for message in response["messages"]}
-    write_to_serial()
+    update_sign()
 
 @app.event("message")
 def handle_message(event, say):
@@ -47,24 +83,58 @@ def handle_message(event, say):
                 messages.pop(event["previous_message"]["ts"])
                 changed = True
     if changed:
-        write_to_serial()
+        update_sign()
 
-def write_to_serial():
+def update_sign():
     """Write messages to serial on change (and startup)"""
     print()
-    print("OUTPUT:")
+    print("Messages:")
+    print("---")
+
+    sign = ledsign2.LEDSign(config['serial_port'])
+    sign.begin_message(reset=True)
+    sign.begin_file(1)
+
+    draw_title(sign)
+
     for ts in sorted(messages):
         message = messages[ts]
-        # Convert the message to your special format
-        formatted_message = convert_to_special_format(message)
-        # Write to serial
-        # serial.write(formatted_message)
-        print(f"{ts=} {formatted_message}")
+        print(f"Message: {ts=} {message=}")
+        draw_message(sign, message)
+        print("---")
 
-# Convert message to a special format (pseudo-code)
-def convert_to_special_format(message):
-    # Implement your conversion logic here
-    return message
+    # sign.end_frame()
+    # sign.add_special(ledsign2.ANIMATION_HAPPY_EASTER)
+    # sign.add_special(ledsign2.GRAPHIC_CARS)
+    # sign.end_frame()
+    # sign.add_special(ledsign2.GRAPHIC_VESSEL)
+    # sign.end_frame()
+    # sign.add_special(ledsign2.SYMBOL_SNAKE)
+
+    sign.end_file()
+    sign.end_message()
+
+def draw_title(sign):
+    sign.add_run_mode(ledsign2.EFFECT_SCROLL_UP)
+    sign.add_special(ledsign2.FONT_5x5)
+    sign.add_special(ledsign2.COLOUR_RAINBOW2)
+    sign.add_text("Artifactory")
+
+    sign.end_frame()
+    sign.add_run_mode(random.choice(transitions_to_title))
+    sign.add_special(ledsign2.FONT_5x5)
+    sign.add_special(ledsign2.COLOUR_RAINBOW2)
+    sign.add_text("SlackScroll")
+
+def draw_message(sign, text):
+    # Scroll the whole thing at once
+    sign.end_frame()
+    # sign.add_run_mode(ledsign2.EFFECT_SCROLL_LEFT)
+    sign.add_run_mode(random.choice(transitions_between_messages))
+    # sign.add_special(ledsign2.COLOUR_BRIGHT_RED)
+    sign.add_special(random.choice(message_colours))
+    sign.add_special(ledsign2.FONT_5x7)
+    sign.add_text(text)
 
 if __name__ == "__main__":
     fetch_existing_messages()
