@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  slack-scroll:
+    user: root
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: your_dockerhub_username/slack-scroll:latest
+    environment:
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN}
+      SLACK_SIGNING_SECRET: ${SLACK_SIGNING_SECRET}
+      CHANNEL_ID: ${CHANNEL_ID}
+      SOCKET_MODE_TOKEN: ${SOCKET_MODE_TOKEN}
+      SERIAL_PORT: ${SERIAL_PORT}
+    devices:
+      - "/dev/ttyS3:/dev/ttyS3"
