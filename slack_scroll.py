@@ -70,8 +70,8 @@ def fetch_existing_messages():
     print("fetch_existing_messages")
     global messages
     response = app.client.conversations_history(
-        token=config["slack_bot_token"],
-        channel=config["channel_id"],
+        token=config.slack_bot_token,
+        channel=config.channel_id,
         limit=100  # You can adjust the limit as needed
     )
     if response["ok"]:
@@ -84,7 +84,7 @@ def handle_message(event, say):
     print(f"handle_message: {event=}")
     changed = False
     # Check if the message is from the desired channel
-    if event["channel"] == config["channel_id"]:
+    if event["channel"] == config.channel_id:
         if "subtype" not in event:
             # Add the message to the list
             messages[event["ts"]] = event["text"]
@@ -106,7 +106,7 @@ def update_sign():
     print("Messages:")
     print("---")
 
-    sign = ledsign2.LEDSign(config['serial_port'])
+    sign = ledsign2.LEDSign(config.serial_port)
     sign.begin_message(reset=True)
     sign.begin_file(1)
 
