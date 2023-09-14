@@ -41,11 +41,26 @@ message_colours = [
     ledsign2.COLOUR_BRIGHT_GREEN,
 ]
 
-with open('config.json') as f:
-    config = json.load(f)
+class Config:
+    def __init__(self):
+        self.slack_bot_token = os.environ.get("SLACK_BOT_TOKEN")
+        self.slack_signing_secret = os.environ.get("SLACK_SIGNING_SECRET")
+        self.channel_id = os.environ.get("CHANNEL_ID")
+        self.socket_mode_token = os.environ.get("SOCKET_MODE_TOKEN")
+        self.serial_port = os.environ.get("SERIAL_PORT")
+
+    def validate(self):
+        attributes = vars(self)
+        for attribute, value in attributes.items():
+            if not value:
+                raise ValueError(f"Environment variable for {attribute} not set!")
+
+# Initialize the configuration
+config = Config()
+config.validate()
 
 # Initialize the app with your bot token and signing secret
-app = App(token=config["slack_bot_token"], signing_secret=config["slack_signing_secret"])
+app = App(token=config.slack_bot_token, signing_secret=config.slack_signing_secret)
 
 # List to store messages by timestamp
 messages = {}
@@ -139,5 +154,5 @@ def draw_message(sign, text):
 if __name__ == "__main__":
     fetch_existing_messages()
     # Start the app in Socket Mode
-    handler = SocketModeHandler(app, config["socket_mode_token"])
+    handler = SocketModeHandler(app, config.socket_mode_token)
     handler.start()
