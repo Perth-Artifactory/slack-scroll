@@ -15,4 +15,4 @@ COPY src/slack_scroll.py slack_scroll.py
 COPY src/ledsign2.py ledsign2.py
 
 # Set the default command to run when starting the container
-CMD ["python", "slack_scroll.py"]
+CMD ["python", "-u", "slack_scroll.py"]
