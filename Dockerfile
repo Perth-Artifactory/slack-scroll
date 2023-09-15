@@ -11,7 +11,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
-COPY . .
+COPY src/slack_scroll.py slack_scroll.py
+COPY src/ledsign2.py ledsign2.py
 
 # Set the default command to run when starting the container
 CMD ["python", "slack_scroll.py"]
