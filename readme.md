@@ -6,12 +6,13 @@ A python application to take messages from Slack channel #slackscroll and show t
 description of how to update/change messages
 
 ## Installation
-How to run the app.
+How to install and run slack scroll.
 
-1. Take a Rasperry Pi Zero W and install Raspberry Pi OS
+1. Take a Rasperry Pi Zero W and install Raspberry Pi OS: https://www.raspberrypi.com/software/
 2. Follow docker install guide: https://docs.docker.com/engine/install/raspberry-pi-os/
 3. Create `.env` and `docker-compose.yml` files from template below. Put them in `~/slackscroll`.
-4. docke
+4. Install and run slack scroll with docker compose: `sudo docker compose up -d`
+5. Check logs with `sudo docker compose logs`
 
 `.env` template:
 
@@ -32,6 +33,7 @@ services:
   slack-scroll:
     image: tazard/slack-scroll:latest
     restart: always
+    init: true
     environment:
       SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN}
       SLACK_SIGNING_SECRET: ${SLACK_SIGNING_SECRET}
@@ -41,6 +43,11 @@ services:
     devices:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
 ```
+
+
+
+
+
 
 Setting Up SlackScroll on Raspberry Pi OS
 Prerequisites
