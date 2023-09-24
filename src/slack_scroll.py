@@ -118,14 +118,6 @@ def update_sign():
         draw_message(sign, message)
         print("---")
 
-    # sign.end_frame()
-    # sign.add_special(ledsign2.ANIMATION_HAPPY_EASTER)
-    # sign.add_special(ledsign2.GRAPHIC_CARS)
-    # sign.end_frame()
-    # sign.add_special(ledsign2.GRAPHIC_VESSEL)
-    # sign.end_frame()
-    # sign.add_special(ledsign2.SYMBOL_SNAKE)
-
     sign.end_file()
     sign.end_message()
 
@@ -142,14 +134,16 @@ def draw_title(sign):
     sign.add_text("SlackScroll")
 
 def draw_message(sign, text):
-    # Scroll the whole thing at once
-    sign.end_frame()
-    sign.add_run_mode(random.choice(transitions_between_messages))
-    colour = random.choice(message_colours)
     first = True
+    run_mode_block = random.choice(transitions_between_messages)
+    run_mode_line = random.choice(transitions_to_title)
+    colour = random.choice(message_colours)
     for line in text.split('\n'):
-        if not first:
-            sign.add_run_mode(random.choice(transitions_to_title))
+        sign.end_frame()
+        if first:
+            sign.add_run_mode(run_mode_block)
+        else:
+            sign.add_run_mode(run_mode_line)
         first = False
         sign.add_special(colour)
         sign.add_special(ledsign2.FONT_5x7)
