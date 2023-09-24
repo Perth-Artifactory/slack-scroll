@@ -144,12 +144,20 @@ def draw_title(sign):
 def draw_message(sign, text):
     # Scroll the whole thing at once
     sign.end_frame()
-    # sign.add_run_mode(ledsign2.EFFECT_SCROLL_LEFT)
     sign.add_run_mode(random.choice(transitions_between_messages))
-    # sign.add_special(ledsign2.COLOUR_BRIGHT_RED)
-    sign.add_special(random.choice(message_colours))
-    sign.add_special(ledsign2.FONT_5x7)
-    sign.add_text(text)
+    colour = random.choice(message_colours)
+    first = True
+    for line in text.split('\n'):
+        if not first:
+            sign.add_run_mode(random.choice(transitions_to_title))
+        first = False
+        sign.add_special(colour)
+        sign.add_special(ledsign2.FONT_5x7)
+        try:
+            sign.add_text(line)
+        except Exception as e:
+            print("Exception: " + str(e))
+            sign.add_text("-InvalidChar-")
 
 if __name__ == "__main__":
     fetch_existing_messages()
