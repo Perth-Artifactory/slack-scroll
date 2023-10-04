@@ -74,8 +74,16 @@ def fetch_existing_messages():
         channel=config.channel_id,
         limit=100  # You can adjust the limit as needed
     )
+    print(f"response=\n{json.dumps(response.data)}\n")
     if response["ok"]:
-        messages = {message["ts"]: message["text"] for message in response["messages"]}
+        messages = {}
+        for message in response["messages"]:
+            if "subtype" not in message:
+                # Add the message to the list
+                messages[message["ts"]] = message["text"]
+            else:
+                # Ignoring subtypes like "join"
+                print(f"Ignored: {message['subtype']=}, {message['text']=}")
     update_sign()
 
 @app.event("message")
@@ -99,6 +107,11 @@ def handle_message(event, say):
                 changed = True
     if changed:
         update_sign()
+    elif 'subtype' in event and 'text' in event:
+        print(f"Ignored: {event['subtype']=}, {event['text']=}")
+    else:
+        print(f"Ignored weird message")
+
 
 def update_sign():
     """Write messages to serial on change (and startup)"""
