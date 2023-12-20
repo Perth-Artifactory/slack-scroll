@@ -29,6 +29,17 @@ jobs:
       id: docker_build
       uses: docker/build-push-action@v5
       with:
+        context: ./slack_scroll
         push: true
         tags: tazard/slack-scroll:latest
         platforms: linux/arm/v6
+
+    - name: Build and push
+      id: docker_build_web_interface
+      uses: docker/build-push-action@v5
+      with:
+        context: ./web_interface
+        push: true
+        tags: tazard/slack-scroll-web-interface:latest
+        platforms: linux/arm/v6
+  
