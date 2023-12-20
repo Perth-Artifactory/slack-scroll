@@ -25,7 +25,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push
+    - name: Build and push - Slack Scroll
       id: docker_build
       uses: docker/build-push-action@v5
       with:
@@ -34,7 +34,7 @@ jobs:
         tags: tazard/slack-scroll:latest
         platforms: linux/arm/v6
 
-    - name: Build and push
+    - name: Build and push - Web Interface
       id: docker_build_web_interface
       uses: docker/build-push-action@v5
       with:
