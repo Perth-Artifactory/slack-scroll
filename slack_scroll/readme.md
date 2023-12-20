@@ -45,16 +45,16 @@ services:
 ```
 
 
-To keep the display interesting, add a cron job to restart docker compose every 3hrs. The restart will changes up the animations (they are randomly selected from some lists).
+To keep the display interesting, add a cron job to restart docker compose every 3hrs. The restart will changes up the animations (they are randomly selected from some lists). Use root crontab since docker is using root for security.
 
 ```
-crontab -e
+sudo crontab -e
 ```
 
 Add:
 
 ```
-0 */3 * * * docker compose restart -f /home/pi/slackscroll/docker-compose.yml
+0 */3 * * * docker compose -f /home/pi/slackscroll/docker-compose.yml restart
 ```
 
 
