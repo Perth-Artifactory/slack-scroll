@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/web_interface.py web_interface.py
 
 # Set the default command to run when starting the container
-CMD ["python", "-u", "slack_scroll.py"]
+CMD ["python", "-u", "web_interface.py"]
