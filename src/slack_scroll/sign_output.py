@@ -1,8 +1,9 @@
 """Sign output abstractions for different modes."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Optional
-import sys
+from typing import Any
 
 
 class SignOutput(ABC):
@@ -10,41 +11,41 @@ class SignOutput(ABC):
 
     @abstractmethod
     def begin_message(self, reset: bool = False) -> None:
-        pass
+        """Begin a new message on the sign."""
 
     @abstractmethod
     def end_message(self) -> None:
-        pass
+        """End the current message."""
 
     @abstractmethod
     def begin_file(self, file_id: int) -> None:
-        pass
+        """Begin a new file on the sign."""
 
     @abstractmethod
     def end_file(self) -> None:
-        pass
+        """End the current file."""
 
     @abstractmethod
     def add_run_mode(self, mode: str) -> None:
-        pass
+        """Add a run mode (effect) to the current frame."""
 
     @abstractmethod
     def add_special(self, special: str) -> None:
-        pass
+        """Add a special command (color, font, etc.)."""
 
     @abstractmethod
     def add_text(self, text: str) -> None:
-        pass
+        """Add text to the current frame."""
 
     @abstractmethod
     def end_frame(self) -> None:
-        pass
+        """End the current frame."""
 
 
 class SerialSignOutput(SignOutput):
     """Real serial output to LED sign."""
 
-    def __init__(self, port: str):
+    def __init__(self, port: str) -> None:
         from slack_scroll.ledsign2 import LEDSign
 
         self.sign = LEDSign(port)
@@ -83,7 +84,7 @@ class SerialSignOutput(SignOutput):
 class ConsoleSignOutput(SignOutput):
     """Console output for development - shows what would be sent to sign."""
 
-    def __init__(self, port: str = "CONSOLE"):
+    def __init__(self, port: str = "CONSOLE") -> None:
         self.port = port
         self.frame_count = 0
         self.line_count = 0
@@ -100,7 +101,7 @@ class ConsoleSignOutput(SignOutput):
         print(f"[CONSOLE] Beginning file {file_id}")
 
     def end_file(self) -> None:
-        print(f"[CONSOLE] Ending file")
+        print("[CONSOLE] Ending file")
 
     def add_run_mode(self, mode: str) -> None:
         print(f"  [EFFECT] {mode}")
@@ -121,8 +122,8 @@ class ConsoleSignOutput(SignOutput):
 class TestSignOutput(SignOutput):
     """Test output that records all operations for verification."""
 
-    def __init__(self):
-        self.operations: list = []
+    def __init__(self) -> None:
+        self.operations: list[tuple[str, dict[str, Any]]] = []
         self.frame_count = 0
 
     def begin_message(self, reset: bool = False) -> None:
@@ -150,7 +151,7 @@ class TestSignOutput(SignOutput):
         self.frame_count += 1
         self.operations.append(("end_frame", {"frame": self.frame_count}))
 
-    def get_operations(self) -> list:
+    def get_operations(self) -> list[tuple[str, dict[str, Any]]]:
         return self.operations.copy()
 
     def clear(self) -> None:

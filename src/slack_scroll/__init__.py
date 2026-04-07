@@ -8,13 +8,12 @@ Main entry point supporting multiple modes:
 - test: Test mode with mocked Slack and serial
 """
 
+import argparse
 import os
 import sys
-import argparse
-from typing import Optional
 
 
-def main():
+def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
         description="Display Slack messages on LED matrix sign",

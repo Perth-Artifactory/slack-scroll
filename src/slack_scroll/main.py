@@ -3,24 +3,29 @@
 Slack Scroll - Main application logic
 """
 
-import os
+from __future__ import annotations
+
 import json
+import os
 import random
-from typing import Dict, Optional, Callable
+from typing import TYPE_CHECKING, Any
+
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
-from slack_scroll.sign_output import SignOutput
+from slack_scroll.sign_output import SerialSignOutput, SignOutput
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 # Animation configurations
-TRANSITIONS_TO_TITLE = [
+TRANSITIONS_TO_TITLE: list[str] = [
     "SPLIT_OPEN",
     "WIPE_DOWN",
     "FALLING_LINES",
 ]
 
-TRANSITIONS_BETWEEN_MESSAGES = [
+TRANSITIONS_BETWEEN_MESSAGES: list[str] = [
     "SPLIT_OPEN",
     "SPLIT_CLOSE",
     "WIPE_OUT",
@@ -36,7 +41,7 @@ TRANSITIONS_BETWEEN_MESSAGES = [
     "SLIDE_LETTERS",
 ]
 
-MESSAGE_COLOURS = [
+MESSAGE_COLOURS: list[str] = [
     "BRIGHT_RED",
     "DIM_RED",
     "AMBER",
@@ -51,40 +56,45 @@ MESSAGE_COLOURS = [
 class Config:
     """Application configuration from environment variables."""
 
-    def __init__(self):
-        self.slack_bot_token = os.environ.get("SLACK_BOT_TOKEN")
-        self.slack_signing_secret = os.environ.get("SLACK_SIGNING_SECRET")
-        self.channel_id = os.environ.get("CHANNEL_ID")
-        self.socket_mode_token = os.environ.get("SOCKET_MODE_TOKEN")
-        self.serial_port = os.environ.get("SERIAL_PORT", "/dev/ttyUSB0")
-        self.verbose = os.environ.get("SLACK_SCROLL_VERBOSE", "0") == "1"
+    def __init__(self) -> None:
+        self.slack_bot_token: str | None = os.environ.get("SLACK_BOT_TOKEN")
+        self.slack_signing_secret: str | None = os.environ.get("SLACK_SIGNING_SECRET")
+        self.channel_id: str | None = os.environ.get("CHANNEL_ID")
+        self.socket_mode_token: str | None = os.environ.get("SOCKET_MODE_TOKEN")
+        self.serial_port: str = os.environ.get("SERIAL_PORT", "/dev/ttyUSB0")
+        self.verbose: bool = os.environ.get("SLACK_SCROLL_VERBOSE", "0") == "1"
 
     def validate(self) -> None:
         """Validate that all required configuration is present."""
-        required = [
+        required: list[tuple[str, str]] = [
             ("slack_bot_token", "SLACK_BOT_TOKEN"),
             ("slack_signing_secret", "SLACK_SIGNING_SECRET"),
             ("channel_id", "CHANNEL_ID"),
             ("socket_mode_token", "SOCKET_MODE_TOKEN"),
         ]
 
-        missing = []
+        missing: list[str] = []
         for attr, env_var in required:
             if not getattr(self, attr):
                 missing.append(env_var)
 
         if missing:
-            raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
+            msg = f"Missing required environment variables: {', '.join(missing)}"
+            raise ValueError(msg)
 
 
 class SlackScrollApp:
     """Main Slack Scroll application."""
 
-    def __init__(self, sign_output: SignOutput, config: Optional[Config] = None):
+    def __init__(
+        self,
+        sign_output: SignOutput,
+        config: Config | None = None,
+    ) -> None:
         self.config = config or Config()
         self.config.validate()
         self.sign_output = sign_output
-        self.messages: Dict[str, str] = {}
+        self.messages: dict[str, str] = {}
         self.app = App(
             token=self.config.slack_bot_token,
             signing_secret=self.config.slack_signing_secret,
@@ -95,33 +105,31 @@ class SlackScrollApp:
         """Set up Slack event handlers."""
 
         @self.app.event("message")
-        def handle_message(event, say):
+        def handle_message(event: dict[str, Any], say: Callable[..., Any]) -> None:
             """Handle incoming Slack messages."""
             if self.config.verbose:
                 print(f"\nReceived message event: {json.dumps(event, indent=2)}")
 
             changed = False
 
-            # Check if message is from our channel
             if event.get("channel") == self.config.channel_id:
                 subtype = event.get("subtype")
 
                 if subtype is None:
-                    # Regular message
                     self.messages[event["ts"]] = event["text"]
                     changed = True
                     if self.config.verbose:
-                        print(f"Added message: {event['ts']} = {event['text'][:50]}...")
+                        preview = event["text"][:50]
+                        print(f"Added message: {event['ts']} = {preview}...")
 
                 elif subtype == "message_changed":
-                    # Message was edited
-                    self.messages[event["message"]["ts"]] = event["message"]["text"]
+                    msg = event["message"]
+                    self.messages[msg["ts"]] = msg["text"]
                     changed = True
                     if self.config.verbose:
-                        print(f"Updated message: {event['message']['ts']}")
+                        print(f"Updated message: {msg['ts']}")
 
                 elif subtype == "message_deleted":
-                    # Message was deleted
                     ts = event["previous_message"]["ts"]
                     if ts in self.messages:
                         del self.messages[ts]
@@ -140,6 +148,8 @@ class SlackScrollApp:
         print("\nFetching existing messages...")
 
         try:
+            # Config is validated in __init__, so channel_id is not None
+            assert self.config.channel_id is not None
             response = self.app.client.conversations_history(
                 token=self.config.slack_bot_token,
                 channel=self.config.channel_id,
@@ -148,13 +158,14 @@ class SlackScrollApp:
 
             if response["ok"]:
                 self.messages = {}
-                for message in response["messages"]:
+                messages = response.get("messages", [])
+                for message in messages:
                     if "subtype" not in message:
                         self.messages[message["ts"]] = message["text"]
                     elif self.config.verbose:
-                        print(
-                            f"Ignored existing: {message.get('subtype')} = {message.get('text', '')[:30]}"
-                        )
+                        subtype = message.get("subtype", "unknown")
+                        text = message.get("text", "")[:30]
+                        print(f"Ignored existing: {subtype} = {text}")
 
                 print(f"Loaded {len(self.messages)} messages")
                 self.update_sign()
@@ -170,20 +181,17 @@ class SlackScrollApp:
         print("UPDATING SIGN")
         print("=" * 50)
 
-        # Start message
         self.sign_output.begin_message(reset=True)
         self.sign_output.begin_file(1)
-
-        # Draw title
         self._draw_title()
 
-        # Draw messages
         for ts in sorted(self.messages.keys()):
             message = self.messages[ts]
-            print(f"\nMessage [{ts}]: {message[:60]}{'...' if len(message) > 60 else ''}")
+            preview = message[:60]
+            suffix = "..." if len(message) > 60 else ""
+            print(f"\nMessage [{ts}]: {preview}{suffix}")
             self._draw_message(message)
 
-        # End message
         self.sign_output.end_file()
         self.sign_output.end_message()
 
@@ -193,14 +201,12 @@ class SlackScrollApp:
 
     def _draw_title(self) -> None:
         """Draw the title on the sign."""
-        # First line
         self.sign_output.add_run_mode("SCROLL_UP")
         self.sign_output.add_special("FONT_5x5")
         self.sign_output.add_special("COLOUR_RAINBOW2")
         self.sign_output.add_text("Artifactory")
         self.sign_output.end_frame()
 
-        # Second line
         self.sign_output.add_run_mode(random.choice(TRANSITIONS_TO_TITLE))
         self.sign_output.add_special("FONT_5x5")
         self.sign_output.add_special("COLOUR_RAINBOW2")
@@ -245,10 +251,8 @@ class SlackScrollApp:
         print(f"Port: {self.config.serial_port}")
         print("=" * 50 + "\n")
 
-        # Fetch existing messages
         self.fetch_existing_messages()
 
-        # Start Socket Mode handler
         print("\nStarting Socket Mode handler...")
         print("Press Ctrl+C to exit\n")
 
@@ -256,16 +260,13 @@ class SlackScrollApp:
         handler.start()
 
 
-def main(sign_output: Optional[SignOutput] = None) -> int:
+def main(sign_output: SignOutput | None = None) -> int:
     """Main entry point."""
     try:
         config = Config()
         config.validate()
 
         if sign_output is None:
-            # Default to serial output
-            from slack_scroll.sign_output import SerialSignOutput
-
             sign_output = SerialSignOutput(config.serial_port)
 
         app = SlackScrollApp(sign_output, config)

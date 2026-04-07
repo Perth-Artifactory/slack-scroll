@@ -1,6 +1,6 @@
 """Serial mode - production mode with real LED sign output."""
 
-from slack_scroll.main import SlackScrollApp, Config
+from slack_scroll.main import Config, SlackScrollApp
 from slack_scroll.sign_output import SerialSignOutput
 
 

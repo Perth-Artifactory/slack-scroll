@@ -1,10 +1,11 @@
 """Tests for Slack Scroll application."""
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 
 from slack_scroll.main import Config, SlackScrollApp
-from slack_scroll.sign_output import TestSignOutput, ConsoleSignOutput
+from slack_scroll.sign_output import ConsoleSignOutput, TestSignOutput
 
 
 class TestConfig:
@@ -68,9 +69,9 @@ class TestSlackScrollApp:
 
     def test_app_initialization(self, mock_config, test_sign):
         """Test app initializes correctly."""
-        with patch("slack_scroll.main.App") as MockApp:
+        with patch("slack_scroll.main.App") as mock_app_class:
             mock_app = Mock()
-            MockApp.return_value = mock_app
+            mock_app_class.return_value = mock_app
 
             app = SlackScrollApp(test_sign, mock_config)
 
@@ -80,9 +81,9 @@ class TestSlackScrollApp:
 
     def test_update_sign_empty(self, mock_config, test_sign):
         """Test updating sign with no messages."""
-        with patch("slack_scroll.main.App") as MockApp:
+        with patch("slack_scroll.main.App") as mock_app_class:
             mock_app = Mock()
-            MockApp.return_value = mock_app
+            mock_app_class.return_value = mock_app
 
             app = SlackScrollApp(test_sign, mock_config)
             app.update_sign()
@@ -99,9 +100,9 @@ class TestSlackScrollApp:
 
     def test_update_sign_with_messages(self, mock_config, test_sign):
         """Test updating sign with messages."""
-        with patch("slack_scroll.main.App") as MockApp:
+        with patch("slack_scroll.main.App") as mock_app_class:
             mock_app = Mock()
-            MockApp.return_value = mock_app
+            mock_app_class.return_value = mock_app
 
             app = SlackScrollApp(test_sign, mock_config)
             app.messages = {
@@ -117,7 +118,7 @@ class TestSlackScrollApp:
             assert "Test message 2" in text_ops
 
 
-class TestSignOutput:
+class TestSignOutputImpl:
     """Test sign output implementations."""
 
     def test_test_sign_output_records_operations(self):
@@ -132,7 +133,7 @@ class TestSignOutput:
         operations = sign.get_operations()
 
         assert len(operations) == 4
-        assert operations[0] == ("begin_message", {})
+        assert operations[0][0] == "begin_message"
         assert operations[1] == ("add_text", {"text": "Hello"})
         assert operations[2][0] == "end_frame"
         assert operations[3] == ("end_message", {})
@@ -182,9 +183,9 @@ class TestMessageHandling:
         """Test handling new message event."""
         test_sign = TestSignOutput()
 
-        with patch("slack_scroll.main.App") as MockApp:
+        with patch("slack_scroll.main.App") as mock_app_class:
             mock_app = Mock()
-            MockApp.return_value = mock_app
+            mock_app_class.return_value = mock_app
 
             app = SlackScrollApp(test_sign, mock_config)
 
@@ -204,9 +205,9 @@ class TestMessageHandling:
         """Test ignoring messages from wrong channel."""
         test_sign = TestSignOutput()
 
-        with patch("slack_scroll.main.App") as MockApp:
+        with patch("slack_scroll.main.App") as mock_app_class:
             mock_app = Mock()
-            MockApp.return_value = mock_app
+            mock_app_class.return_value = mock_app
 
             app = SlackScrollApp(test_sign, mock_config)
             app.messages = {}

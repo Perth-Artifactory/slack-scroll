@@ -1,13 +1,10 @@
 """Console mode - shows sign output in terminal instead of serial."""
 
-import sys
-from slack_scroll.main import SlackScrollApp
+from slack_scroll.main import Config, SlackScrollApp
 from slack_scroll.sign_output import ConsoleSignOutput
 
 
 def run() -> int:
-    from slack_scroll.main import Config
-
     config = Config()
     config.validate()
 

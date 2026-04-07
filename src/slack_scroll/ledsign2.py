@@ -5,9 +5,16 @@ Original implementation by Michael Farrell (LGPL-3.0)
 Adapted for Slack Scroll project.
 """
 
-import serial
+from __future__ import annotations
+
 from datetime import datetime
 from struct import pack
+from typing import TYPE_CHECKING
+
+import serial
+
+if TYPE_CHECKING:
+    from serial import Serial
 
 # Effects
 EFFECT_CYCLIC = 1
@@ -155,17 +162,17 @@ SOUND_BEEP_1 = b"\xe2"
 class LEDSign:
     """LED Sign controller for XC0193 protocol."""
 
-    def __init__(self, port: str):
-        self.s = serial.Serial(port, 2400)
-        self.file_id = None
-        self.message_open = False
+    def __init__(self, port: str) -> None:
+        self.s: Serial = serial.Serial(port, 2400)
+        self.file_id: int | None = None
+        self.message_open: bool = False
 
     def send_to_sign(self, msg: bytes) -> None:
-        byte_string = " ".join("{:02x}".format(c) for c in msg)
+        byte_string = " ".join(f"{c:02x}" for c in msg)
         print(f'Send: {msg} = "{byte_string}"')
         self.s.write(msg)
 
-    def begin_message(self, sign: list = None, reset: bool = False) -> None:
+    def begin_message(self, sign: list[int] | int | None = None, reset: bool = False) -> None:
         if sign is None:
             sign = list(range(0, 128))
 
@@ -212,7 +219,7 @@ class LEDSign:
         self.send_to_sign(b"\x00")
         self.message_open = False
 
-    def set_clock(self, n: datetime = None, hour24: bool = True) -> None:
+    def set_clock(self, n: datetime | None = None, hour24: bool = True) -> None:
         if self.file_id is not None:
             raise RuntimeError("Cannot set clock while file is open")
 
@@ -252,7 +259,7 @@ class LEDSign:
     def display_page(self, pageid: int) -> None:
         pass
 
-    def playlist(self, page_order: list) -> None:
+    def playlist(self, page_order: list[int]) -> None:
         pass
 
     def close(self) -> None:

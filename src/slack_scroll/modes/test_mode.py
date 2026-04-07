@@ -1,22 +1,23 @@
 """Test mode with mocked Slack and sign for automated testing."""
 
-import json
-import time
-from typing import Dict, List
-from unittest.mock import Mock, MagicMock, patch
+from __future__ import annotations
 
-from slack_scroll.main import SlackScrollApp, Config
+import os
+from typing import Any
+from unittest.mock import Mock, patch
+
+from slack_scroll.main import Config, SlackScrollApp
 from slack_scroll.sign_output import TestSignOutput
 
 
 class MockSlackClient:
     """Mock Slack client for testing."""
 
-    def __init__(self):
-        self.messages: List[Dict] = []
-        self.event_handlers: Dict[str, callable] = {}
+    def __init__(self) -> None:
+        self.messages: list[dict[str, Any]] = []
+        self.event_handlers: dict[str, Any] = {}
 
-    def conversations_history(self, **kwargs) -> Mock:
+    def conversations_history(self, **kwargs: Any) -> Mock:
         response = Mock()
         response.data = {
             "ok": True,
@@ -34,7 +35,7 @@ class MockSlackClient:
             }
         )
 
-    def trigger_event(self, event_type: str, event_data: Dict) -> None:
+    def trigger_event(self, event_type: str, event_data: dict[str, Any]) -> None:
         if event_type in self.event_handlers:
             self.event_handlers[event_type](event_data, None)
 
@@ -44,9 +45,6 @@ def run() -> int:
     print("SLACK SCROLL - TEST MODE")
     print("=" * 60)
 
-    # Set up test environment
-    import os
-
     os.environ.setdefault("SLACK_BOT_TOKEN", "xoxb-test-token")
     os.environ.setdefault("SLACK_SIGNING_SECRET", "test-secret")
     os.environ.setdefault("CHANNEL_ID", "C05R9591KFH")
@@ -54,22 +52,18 @@ def run() -> int:
     os.environ.setdefault("SERIAL_PORT", "/dev/ttyTEST")
 
     config = Config()
-
     sign_output = TestSignOutput()
 
-    # Mock the Slack app
     with (
-        patch("slack_scroll.main.App") as MockApp,
-        patch("slack_scroll.main.SocketModeHandler") as MockHandler,
+        patch("slack_scroll.main.App") as mock_app_class,
+        patch("slack_scroll.main.SocketModeHandler"),
     ):
         mock_app = Mock()
         mock_app.client = MockSlackClient()
-        MockApp.return_value = mock_app
+        mock_app_class.return_value = mock_app
 
-        # Create app
         app = SlackScrollApp(sign_output, config)
 
-        # Add test messages
         test_messages = [
             ("1234567890.000001", "Hello Artifactory!"),
             ("1234567890.000002", "This is a test message"),
@@ -79,20 +73,18 @@ def run() -> int:
         for ts, text in test_messages:
             app.messages[ts] = text
 
-        # Update sign
         print("\nTest 1: Update sign with test messages")
         app.update_sign()
 
         operations = sign_output.get_operations()
         print(f"\nSign operations recorded: {len(operations)}")
 
-        for op, params in operations[:10]:  # Show first 10
+        for op, params in operations[:10]:
             print(f"  {op}: {params}")
 
         if len(operations) > 10:
             print(f"  ... and {len(operations) - 10} more operations")
 
-        # Test message handling
         print("\nTest 2: Simulate incoming message")
         sign_output.clear()
 
@@ -102,7 +94,6 @@ def run() -> int:
             "text": "New incoming message!",
         }
 
-        # Manually add message
         app.messages[test_event["ts"]] = test_event["text"]
         app.update_sign()
 
@@ -110,7 +101,6 @@ def run() -> int:
         text_ops = [op for op, params in operations if op == "add_text"]
         print(f"  Message added: {len(text_ops)} text operations")
 
-        # Test message deletion
         print("\nTest 3: Simulate message deletion")
         sign_output.clear()
 

@@ -1,9 +1,10 @@
 """Tests for LED sign driver."""
 
-import pytest
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, patch
 
-from slack_scroll.ledsign2 import LEDSign, EFFECT_SCROLL_LEFT, COLOUR_BRIGHT_RED
+import pytest
+
+from slack_scroll.ledsign2 import COLOUR_BRIGHT_RED, EFFECT_SCROLL_LEFT, LEDSign
 
 
 class TestLEDSign:
@@ -12,14 +13,14 @@ class TestLEDSign:
     @pytest.fixture
     def mock_serial(self):
         """Create a mock serial connection."""
-        with patch("slack_scroll.ledsign2.serial.Serial") as MockSerial:
+        with patch("slack_scroll.ledsign2.serial.Serial") as mock_serial_class:
             mock = Mock()
-            MockSerial.return_value = mock
+            mock_serial_class.return_value = mock
             yield mock
 
     def test_init_opens_serial(self, mock_serial):
         """Test that initialization opens serial port."""
-        sign = LEDSign("/dev/ttyUSB0")
+        LEDSign("/dev/ttyUSB0")
 
         # Serial should be opened with correct parameters
         from slack_scroll.ledsign2 import serial
