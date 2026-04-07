@@ -1,0 +1,45 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to Raspberry Pi
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.RPI_HOST }}
+          username: ${{ secrets.RPI_USER }}
+          key: ${{ secrets.RPI_SSH_KEY }}
+          port: ${{ secrets.RPI_PORT || '22' }}
+          script: |
+            set -e
+            echo "Starting deployment..."
+            cd ~/slackscroll
+            ./scripts/update.sh
+            echo "Deployment complete!"
+      
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.RPI_HOST }}
+          username: ${{ secrets.RPI_USER }}
+          key: ${{ secrets.RPI_SSH_KEY }}
+          port: ${{ secrets.RPI_PORT || '22' }}
+          script: |
+            if sudo systemctl is-active --quiet slack-scroll; then
+              echo "✓ Service is running"
+              sudo systemctl status slack-scroll --no-pager
+            else
+              echo "✗ Service is not running!"
+              sudo journalctl -u slack-scroll --no-pager -n 20
+              exit 1
+            fi
