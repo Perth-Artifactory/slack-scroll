@@ -1,4 +1,4 @@
-name: Deploy to Raspberry Pi
+name: Deploy to Raspberry Pi via Teleport
 
 on:
   push:
@@ -13,28 +13,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Deploy to Raspberry Pi
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Install Teleport
+        uses: teleport-actions/setup@v1
         with:
-          host: ${{ secrets.RPI_HOST }}
-          username: ${{ secrets.RPI_USER }}
-          key: ${{ secrets.RPI_SSH_KEY }}
-          port: ${{ secrets.RPI_PORT || '22' }}
-          script: |
+          version: latest
+      
+      - name: Authenticate with Teleport
+        uses: teleport-actions/auth@v2
+        with:
+          proxy: ${{ secrets.TELEPORT_PROXY }}
+          token: ${{ secrets.TELEPORT_TOKEN }}
+          # Optional: specify certificate TTL
+          # certificate-ttl: 1h
+      
+      - name: Deploy to Raspberry Pi
+        run: |
+          set -e
+          echo "Starting deployment via Teleport..."
+          tsh ssh ${{ secrets.TELEPORT_USER }}@${{ secrets.TELEPORT_NODE }} << 'REMOTESCRIPT'
             set -e
-            echo "Starting deployment..."
+            echo "Connected via Teleport, starting deployment..."
             cd ~/slackscroll
             ./scripts/update.sh
             echo "Deployment complete!"
+          REMOTESCRIPT
       
       - name: Verify deployment
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.RPI_HOST }}
-          username: ${{ secrets.RPI_USER }}
-          key: ${{ secrets.RPI_SSH_KEY }}
-          port: ${{ secrets.RPI_PORT || '22' }}
-          script: |
+        run: |
+          tsh ssh ${{ secrets.TELEPORT_USER }}@${{ secrets.TELEPORT_NODE }} << 'REMOTESCRIPT'
             if sudo systemctl is-active --quiet slack-scroll; then
               echo "✓ Service is running"
               sudo systemctl status slack-scroll --no-pager
@@ -43,3 +49,8 @@ jobs:
               sudo journalctl -u slack-scroll --no-pager -n 20
               exit 1
             fi
+          REMOTESCRIPT
+      
+      - name: Cleanup Teleport
+        if: always()
+        run: tsh logout || true

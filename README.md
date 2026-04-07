@@ -75,16 +75,20 @@ sudo systemctl enable slack-scroll
 sudo systemctl start slack-scroll
 ```
 
-### GitHub Actions Deployment
+### GitHub Actions Deployment (via Teleport)
 
-The project includes automated deployment via GitHub Actions. Set these secrets:
+The project includes automated deployment via GitHub Actions using Teleport for secure access (no direct SSH exposure needed).
 
-- `RPI_HOST` - Raspberry Pi IP or hostname
-- `RPI_USER` - SSH username (usually 'pi')
-- `RPI_SSH_KEY` - Private SSH key for deployment
-- `RPI_PORT` - SSH port (default: 22)
+Set these secrets in your GitHub repository:
 
-Push to `main` branch triggers automatic deployment.
+- `TELEPORT_PROXY` - Your Teleport proxy URL (e.g., `teleport.artifactory.org:443`)
+- `TELEPORT_TOKEN` - Teleport join token or bot token
+- `TELEPORT_USER` - Username on the RPi (usually 'pi')
+- `TELEPORT_NODE` - Teleport node name for the RPi (e.g., `slackscroll`)
+
+Push to `main` branch triggers automatic deployment through Teleport.
+
+**Note:** This requires the RPi to be enrolled in your Teleport cluster with the `teleport` agent running.
 
 ### Manual Deployment
 
