@@ -39,6 +39,13 @@ if [ -d .git ]; then
     echo "✓ Code updated"
 fi
 
+if [ ! -d ".venv" ]; then
+    echo ""
+    echo "Creating virtual environment..."
+    uv venv
+    echo "✓ Virtual environment created"
+fi
+
 # Update dependencies
 echo ""
 echo "Updating dependencies..."
