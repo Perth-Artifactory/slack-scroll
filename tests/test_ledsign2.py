@@ -16,16 +16,12 @@ class TestLEDSign:
         with patch("slack_scroll.ledsign2.serial.Serial") as mock_serial_class:
             mock = Mock()
             mock_serial_class.return_value = mock
-            yield mock
+            yield mock_serial_class
 
     def test_init_opens_serial(self, mock_serial):
         """Test that initialization opens serial port."""
         LEDSign("/dev/ttyUSB0")
-
-        # Serial should be opened with correct parameters
-        from slack_scroll.ledsign2 import serial
-
-        serial.Serial.assert_called_once_with("/dev/ttyUSB0", 2400)
+        mock_serial.assert_called_once_with("/dev/ttyUSB0", 2400)
 
     def test_begin_message_single_sign(self, mock_serial):
         """Test beginning message for single sign."""
@@ -34,7 +30,6 @@ class TestLEDSign:
 
         sign.begin_message(sign=5, reset=True)
 
-        # Should send sign address and reset command
         assert sign.message_open is True
 
     def test_add_run_mode_valid(self, mock_serial):
