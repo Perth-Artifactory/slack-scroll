@@ -1,0 +1,28 @@
+[Unit]
+Description=Slack Scroll LED Display
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/slackscroll
+EnvironmentFile=/home/pi/slackscroll/.env
+ExecStart=/home/pi/slackscroll/.venv/bin/python -m slack_scroll
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=slack-scroll
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/pi/slackscroll
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target
